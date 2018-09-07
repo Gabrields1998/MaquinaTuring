@@ -16,27 +16,27 @@ class Maquina():
         self.__Q = linhas[3].split()
         self.__q0 = linhas[4]
         self.__qAtual = self.__q0
-        self.__qf = linhas[5]
+        self.__qf = linhas[5].split()
         self.__qtdFita = linhas[6]
         self.__Fita = Fita(self.__branco, entrada)
         self.__transicoes = []
         for tran in linhas[7:]:
             self.__transicoes.append(Transicoes(tran.split())) # 7: referência tudo o que vier depois do 7
-        self.__transicoes.append("")
         arq.close()
 
     def realizaTransicao(self):
         flag = 0
-        for i in range (0,len(self.__transicoes)+10):
-
+        for i in range (0,len(self.__transicoes)):
             if(flag == 0):
+                # print(self.__transicoes[i].imprime())
                 self.__qAtual = self.__transicoes[i].verificaEstado(self.__qAtual, self.__Fita)
                 flag = self.__transicoes[i].getFlag()
-            else:
-                self.__transicoes[i-1].cleanFlag()
+            if(flag != 0):
+                self.__transicoes[i].cleanFlag()
                 return 0
-            if(self.__qAtual == self.__qf):
-                return 1
+            for j in range (0, len(self.__qf)):
+                if(self.__qAtual == self.__qf[j]):
+                    return 1
         return -1
     def imprimeFita(self):
         self.__Fita.imprime()
