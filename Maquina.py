@@ -1,5 +1,5 @@
 import sys
-from copy import copy
+from copy import deepcopy
 
 #--------------------------------------------------------------
 class Maquina():
@@ -19,7 +19,7 @@ class Maquina():
         self.__q0 = linhas[4] # Estado inicial
         self.__qAtual = self.__q0 # Estado atual da maquina apos cada transicao
         self.__qf = linhas[5].split() # Estados finais de aceitacao
-        self.__qtdFita = linhas[6] 
+        self.__qtdFita = linhas[6]
         self.__Fita = Fita(self.__branco, entrada)
         self.__vetTransicoes = [] # Vetor das transicoes que possivelmente se tornara uma nova execucao
         self.__transicoes = [] #vetor de toda transicao
@@ -27,28 +27,32 @@ class Maquina():
             self.__transicoes.append(Transicoes(tran.split())) # 7: referência tudo o que vier depois do 7
         self.__nomeMaquina = 0
         arq.close()
+        # for i in range (0, len(self.__transicoes)):
+        #     print(self.__transicoes[i].imprime())
         
+
     def verificaBifurcacao(self): # Salva as transacoes que possivelmente se tornaram uma nova bifurcacao
-        del self.__vetTransicoes[:] 
+        del self.__vetTransicoes[:]
         for i in range (0,len(self.__transicoes)): # flag == 1 se for armazenar transicao/ 0 se nao for
             flag = self.__transicoes[i].verificaTransicao(self.__qAtual, self.__Fita)
 
             if flag == 1 :
                 self.__vetTransicoes.append(self.__transicoes[i]) # inclui no fim do vetor 
+        
         if len(self.__vetTransicoes) == 0:
             return -1 
+        
         return self.__vetTransicoes
 
     def realizaTransicao(self, transicao):
         self.__qAtual = transicao.executaTransicao(self.__Fita)
-
         for j in range (0, len(self.__qf)):
             if self.__qAtual == self.__qf[j]:   
                 return 1
         return 0
 
     def alteraFita(self):
-        self.__Fita = copy(self.__Fita)
+        self.__Fita = deepcopy(self.__Fita)
 
     def setNome(self, nome):
         self.__nomeMaquina = nome
@@ -85,7 +89,8 @@ class Transicoes():
         return self.__estadoAtual
 
     def imprime(self):
-        print(self.__estadoAtual + self.__estadoDestino + self.__simbNovo + self.__simbNovo + self.__sentidoMov)
+        print("novosimbolo", self.__simbNovo)
+        print(self.__estadoAtual + self.__estadoDestino + self.__simbAtual + self.__simbNovo + self.__sentidoMov)
 
 #-------------------------------------------------------------------------------------------------------------------
 class Fita():
@@ -115,6 +120,7 @@ class Fita():
                 self.__fita.append(self.__branco)
                 self.__fita.append("...")
             self.__posicaoAtual += 1
+        
 
     def imprime(self):
         for i in range(0, len(self.__fita)):
@@ -140,7 +146,7 @@ while indice == 0:
     maquina.imprimeFita()
     print()
     
-    transicao = maquina.verificaBifurcacao() #conferir
+    transicao = maquina.verificaBifurcacao()
 
     if transicao == -1:
 
@@ -156,9 +162,11 @@ while indice == 0:
         
     
     elif len(transicao) > 1:
-
+        # print(len(transicao))
+        
         for j in range(1,len(transicao)):
-            newMaquina = copy(maquina)
+            newMaquina = deepcopy(maquina)
+            newMaquina.imprimeFita()
             newMaquina.alteraFita()
             nomeMaq += 1
             newMaquina.setNome(nomeMaq)
@@ -166,7 +174,7 @@ while indice == 0:
             if indice == 1:
                 print("verdade")
                 exit(0)
-            listaMaq.append(newMaquina)      
+            listaMaq.append(newMaquina)  
         indice = maquina.realizaTransicao(transicao[0])
 
     if indice == 1:
