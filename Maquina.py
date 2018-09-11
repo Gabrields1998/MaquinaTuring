@@ -34,7 +34,7 @@ class Maquina():
     def verificaBifurcacao(self): # Salva as transacoes que possivelmente se tornaram uma nova bifurcacao
         del self.__vetTransicoes[:]
         for i in range (0,len(self.__transicoes)): # flag == 1 se for armazenar transicao/ 0 se nao for
-            flag = self.__transicoes[i].verificaTransicao(self.__qAtual, self.__Fita)
+            flag = self.__transicoes[i].verificaTransicao(self.__qAtual, self.__Fita) #verifica se nesse estado irá ocorrer uma transição
 
             if flag == 1 :
                 self.__vetTransicoes.append(self.__transicoes[i]) # inclui no fim do vetor 
@@ -47,9 +47,9 @@ class Maquina():
     def realizaTransicao(self, transicao):
         self.__qAtual = transicao.executaTransicao(self.__Fita)
         for j in range (0, len(self.__qf)):
-            if self.__qAtual == self.__qf[j]:   
+            if self.__qAtual == self.__qf[j]: #caso o estado atual seja igual a um dos estados finais, retorna "verdade"
                 return 1
-        return 0
+        return 0 #retorna: continue o processo
 
     def alteraFita(self):
         self.__Fita = deepcopy(self.__Fita)
@@ -111,7 +111,7 @@ class Fita():
             if self.__fita[self.__posicaoAtual-1] == "...": #garante que o processo nunca ultrapassará o limite esquerdo
                 self.__fita[self.__posicaoAtual-1] = self.__branco
                 self.__fita = ['...', self.__branco, self.__branco].append(self.__fita)
-            
+
             self.__posicaoAtual -= 1
 
         elif sentido == 'R':
@@ -125,7 +125,7 @@ class Fita():
     def imprime(self):
         for i in range(0, len(self.__fita)):
             if(i == self.__posicaoAtual):
-                
+
                 print ('\033[31m'+'' + self.__fita[i] + ''+'\033[0;0m', end = ' ')
             else:
                 print(self.__fita[i], end = ' ')
@@ -138,26 +138,32 @@ indice = 0
 nomeMaq = 0
 
 while indice == 0:
-
-    maquina = listaMaq.pop(0)
-    nome = maquina.getNome()
-    status = 0
+    maquina = listaMaq.pop(0) #retira da fila o primeiro elemento
+    nome = maquina.getNome()  #pega o nome para printar
+    status = 0  # variavel de controle da execução de cada máquina
+                # if status == 1 then maquina sem transição
+    #--------------------------PRINT TRANSIÇÃO---------------------------
+    print("-----------------------------------------------")
     print("Maquina", nome, "Executando")
+    print()
     maquina.imprimeFita()
     print()
     
     transicao = maquina.verificaBifurcacao()
 
-    if transicao == -1:
 
-        if len(listaMaq) == 0:
-            print("falso")
-            exit(0)
+    transicao = maquina.verificaBifurcacao() #recebe as transições que devem ser executadas
+
+    if transicao == -1: #caso não haja transição a ser executada
+        if len(listaMaq) == 0: # caso não haja mais maquinas rodando
+            print ('\033[1;31;40m'+'' + "falso!" + ''+'\033[0;0m')
+            print()
+            exit(0) #fim do processo
         print("maquina",nome, "morta")
         print()
-        status = 1
-       
-    elif len(transicao) == 1:
+        status = 1 # finaliza a maquina
+
+    elif len(transicao) == 1: # realiza uma unica transição
         indice = maquina.realizaTransicao(transicao[0])
         
     
@@ -170,7 +176,7 @@ while indice == 0:
             newMaquina.alteraFita()
             nomeMaq += 1
             newMaquina.setNome(nomeMaq)
-            indice = newMaquina.realizaTransicao(transicao[j])
+            indice = newMaquina.realizaTransicao(transicao[j]) #realiza uma transição diferente por máquina
             if indice == 1:
                 print("verdade")
                 exit(0)
@@ -178,9 +184,11 @@ while indice == 0:
         indice = maquina.realizaTransicao(transicao[0])
 
     if indice == 1:
-        print("verdade")
+        print()
+        print('\x1b[1;32;40m'+'' + "Verdade!" + ''+'\x1b[0m')
+        print()
         exit(0)
     if status == 0:
-        listaMaq.append(maquina)
+        listaMaq.append(maquina) # guarda a máquina que esta rodando na vez no final da fila
 
-    del transicao
+    del transicao # reseta o vetor de transições
